@@ -1,5 +1,5 @@
 import os
-import twilio
+import twilio.twiml
 from flask import Flask
 
 # Flask config
@@ -15,11 +15,11 @@ app = Flask(__name__)
 def menu():
     """ Play a menu"""
     resp = twilio.twiml.Response()
-    resp.say("Welcome to the party line.")
-    resp.say("Press 1 to hear a message")
-    resp.say("Press 2 to talk to someone")
-    resp.say("Press 3 to talk to everyone")
-    resp.say("Press 0 to come back to the menu")
+    resp.say("Welcome to the party line.",voice="alice",language="en-GB")
+    resp.say("Press 1 to hear a message",voice="alice",language="en-GB")
+    resp.say("Press 2 to talk to someone",voice="alice",language="en-GB")
+    resp.say("Press 3 to talk to everyone",voice="alice",language="en-GB")
+    resp.say("Press 0 to come back to the menu",voice="alice",language="en-GB")
  
     return str(resp)
  
