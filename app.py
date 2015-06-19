@@ -1,13 +1,21 @@
 import os
+import random
 import twilio.twiml
 from flask import Flask, request, session
 
 # Flask config
+SECRET_KEY = "a secret key"
 app = Flask(__name__)
+app.secret_key = SECRET_KEY
 
 @app.route("/", methods=['GET'])
 def menu():
-    """ Play a menu"""
+    """ Capture calling number. Play a menu """
+    caller = request.values.get('From', None)
+    callers = session.get("callers", [])
+    callers.append(caller)
+    session["callers"] = callers
+
     resp = twilio.twiml.Response()
     with resp.gather(numDigits=1, action="/menu_press", method="POST") as gather:
         gather.say("Welcome to the party line.",voice="alice",language="en-GB")
@@ -27,6 +35,11 @@ def menu_press():
 
     if digits == "1":
         resp.play("https://s3-us-west-1.amazonaws.com/after-the-tone/Memo.mp3")
+        return str(resp)
+
+    if digits == "2":
+        other_caller = random.choice(session["callers"])
+        resp.dial(other_caller)
         return str(resp)
 
 
