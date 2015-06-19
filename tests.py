@@ -54,25 +54,18 @@ class PartyLineTest(unittest.TestCase):
 
     def test_menu_2(self):
         """ Test that pressing menu 2 calls random other caller """
-        callers_list = ['TEST1','TEST2','TEST3']
+        response = self.app.post("/menu_press", data={"Digits" : 2})
 
-        with self.app as c:
-            with c.session_transaction() as sess:
-                sess['callers'] = callers_list
+        # Parse the result into an ElementTree object
+        root = ElementTree.fromstring(response.data)
 
-            response = c.post("/menu_press", data={"Digits" : 2})
+        # Assert the root element is a Response tag
+        self.assertEquals(root.tag, 'Response',
+                "Did not find  tag as root element " \
+                "TwiML response.")
 
-            # Parse the result into an ElementTree object
-            root = ElementTree.fromstring(response.data)
-
-            # Assert the root element is a Response tag
-            self.assertEquals(root.tag, 'Response',
-                    "Did not find  tag as root element " \
-                    "TwiML response.")
-
-            # Call an outbound number
-            self.assertEqual(root[0].tag, 'Dial')
-            self.assertTrue(root[0].text in callers_list)
+        # Call an outbound number
+        self.assertEqual(root[1].tag, 'Dial')
 
 
 if __name__ == '__main__':
