@@ -1,21 +1,23 @@
 import os
 import random
+from datetime import date
 import twilio.twiml
-from flask import Flask, request, session
+from twilio.rest import TwilioRestClient
+from flask import Flask, request
 
 # Flask config
 SECRET_KEY = "a secret key"
 app = Flask(__name__)
 app.secret_key = SECRET_KEY
 
+# Twilio config
+account_sid = os.environ["ACCOUNT_SID"]
+auth_token = os.environ["AUTH_TOKEN"]
+client = TwilioRestClient(account_sid, auth_token)
+
 @app.route("/", methods=['GET'])
 def menu():
-    """ Capture calling number. Play a menu """
-    caller = request.values.get('From', None)
-    callers = session.get("callers", [])
-    callers.append(caller)
-    session["callers"] = callers
-
+    """ Play a menu """
     resp = twilio.twiml.Response()
     with resp.gather(numDigits=1, action="/menu_press", method="POST") as gather:
         gather.say("Welcome to the party line.",voice="alice",language="en-GB")
@@ -38,8 +40,17 @@ def menu_press():
         return str(resp)
 
     if digits == "2":
-        other_caller = random.choice(session["callers"])
-        resp.dial(other_caller)
+        # Get a list of callers from today
+        callers = []
+        for call in client.calls.list(started_after=date.today()):
+            if call.from_ not in callers:
+                callers.append(call.from_)
+
+        # Call a random one
+        random_caller = random.choice(callers)
+        print random_caller
+        resp.say("Connecting you to a random.",voice="alice",language="en-GB")
+        resp.dial(random_caller)
         return str(resp)
 
 
