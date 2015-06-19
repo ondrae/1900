@@ -26,10 +26,36 @@ class PartyLineTest(unittest.TestCase):
                 "Did not find  tag as root element " \
                 "TwiML response.")
 
-        # Assert menu has five options
-        self.assertEquals(len(root.findall('Say')), 5,
+        # Menu is listening
+        self.assertEqual(root[0].tag, 'Gather')
+
+        # Menu has five options
+        self.assertEquals(len(root[0].findall('Say')), 5,
                 "Did not find five menu options, instead found: %i " %
                 len(root.findall('Say')))
+
+
+    def test_menu_1(self):
+        """ Test that pressing menu works"""
+        response = self.app.post("/menu_press", data={"Digits" : 1})
+
+        # Parse the result into an ElementTree object
+        root = ElementTree.fromstring(response.data)
+
+        # Assert the root element is a Response tag
+        self.assertEquals(root.tag, 'Response',
+                "Did not find  tag as root element " \
+                "TwiML response.")
+
+        # Mp3 plays
+        self.assertEqual(root[0].tag, 'Play')
+        self.assertTrue(root[0].text.endswith('.mp3'))
+
+
+
+
+
+
 
 
 if __name__ == '__main__':
