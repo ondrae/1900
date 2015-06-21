@@ -51,18 +51,37 @@ def menu_press():
         return str(resp)
 
     if digits == "2":
-        # Get a list of callers from today
-        callers = []
-        for call in client.calls.list(started_after=date.today()):
-            if call.from_ not in callers:
-                callers.append(call.from_)
+        # Connect two people in a private partyline
+        print "2 pressed"
 
-        # Call a random one
-        random_caller = random.choice(callers)
-        print random_caller
-        resp.say("Connecting you to a random.",voice="alice",language="en-GB")
-        resp.dial(random_caller)
-        return str(resp)
+        # Get list of current partylines
+        partylines = client.conferences.list(status="in-progress")
+
+        # If there arent any, make a new one
+        if not partylines:
+            print "Making new partyline"
+            new_partyline = "partyline1"
+            d = resp.dial()
+            d.conference(new_partyline)
+            return str(resp)
+
+        # Look in newest partyline for someone waiting
+        else:
+            newest_partyline = partylines.pop()
+            newest_partyline_name = newest_partyline.friendly_name
+            conference = client.conferences.list(friendly_name=newest_partyline_name)
+            participants = conference[0].participants.list()
+            if len(participants) == 1:
+                d = resp.dial()
+                d.conference(newest_partyline_name)
+                return str(resp)
+
+            # If they are all paried up, make a new room
+            else:
+                new_partyline_name = "partyline" + str(len(partylines) + 1)
+                d = resp.dial()
+                d.conference(new_partyline_name)
+                return str(resp)
 
 
 if __name__ == "__main__":

@@ -79,20 +79,25 @@ class PartyLineTest(unittest.TestCase):
         self.assertEqual(root[0][1].tag, 'Play')
         self.assertTrue(root[0][1].text.endswith('.mp3'))
 
+
     def test_menu_2(self):
-        """ Test that pressing menu 2 calls random other caller """
+        """ Test private party lines """
         response = self.app.post("/menu_press", data={"Digits" : 2})
 
         # Parse the result into an ElementTree object
         root = ElementTree.fromstring(response.data)
+
+        self.assertEquals(response.status, "200 OK")
 
         # Assert the root element is a Response tag
         self.assertEquals(root.tag, 'Response',
                 "Did not find  tag as root element " \
                 "TwiML response.")
 
-        # Call an outbound number
-        self.assertEqual(root[1].tag, 'Dial')
+        # Dial into a conference
+        self.assertEqual(root[0].tag, 'Dial')
+        self.assertEqual(root[0][0].tag, 'Conference')
+        self.assertEqual(root[0][0].text,'partyline1')
 
 
 if __name__ == '__main__':
