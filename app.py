@@ -24,7 +24,7 @@ def menu():
         gather.say("Press 1 to hear a message",voice="alice",language="en-GB")
         gather.say("Press 2 to talk to someone",voice="alice",language="en-GB")
         gather.say("Press 3 to talk to everyone",voice="alice",language="en-GB")
-        gather.say("Press 0 to come back to the menu",voice="alice",language="en-GB")
+        gather.say("Press 0 anytime to come back to the menu",voice="alice",language="en-GB")
  
     return str(resp)
 
@@ -35,8 +35,17 @@ def menu_press():
     digits = request.values.get('Digits', None)
     resp = twilio.twiml.Response()
 
+    if digits not in ["1","2","3","0"]:
+        resp.redirect("/")
+        return str(resp)
+
     if digits == "1":
-        resp.play("https://s3-us-west-1.amazonaws.com/after-the-tone/Memo.mp3")
+        # Play a message
+        # Press zed to return to the menu
+        with resp.gather(finishOnKey="0") as gather:
+            gather.say("Press 0 anytime to come back to the menu",voice="alice",language="en-GB")
+            gather.play("https://s3-us-west-1.amazonaws.com/after-the-tone/Memo.mp3")
+        resp.redirect("/")
         return str(resp)
 
     if digits == "2":

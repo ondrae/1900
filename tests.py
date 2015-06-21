@@ -35,6 +35,31 @@ class PartyLineTest(unittest.TestCase):
                 len(root.findall('Say')))
 
 
+    def test_bad_menu_press(self):
+        """ Test that non menu choices start the menu over """
+        response = self.app.post("/menu_press", data={"Digits" : 4})
+
+        self.assertEquals(response.status, "200 OK")
+
+        # Parse the result into an ElementTree object
+        root = ElementTree.fromstring(response.data)
+
+        # Assert that we are about to redirect
+        self.assertTrue(root[0].tag,"Redirect")
+        self.assertTrue(root[0].text,"/")
+
+        response = self.app.post("/menu_press", data={"Digits" : 4637829423048})
+
+        self.assertEquals(response.status, "200 OK")
+
+        # Parse the result into an ElementTree object
+        root = ElementTree.fromstring(response.data)
+
+        # Assert that we are about to redirect
+        self.assertTrue(root[0].tag,"Redirect")
+        self.assertTrue(root[0].text,"/")
+
+
     def test_menu_1(self):
         """ Test that pressing menu 1 plays an mp3"""
         response = self.app.post("/menu_press", data={"Digits" : 1})
@@ -47,10 +72,12 @@ class PartyLineTest(unittest.TestCase):
                 "Did not find  tag as root element " \
                 "TwiML response.")
 
-        # Mp3 plays
-        self.assertEqual(root[0].tag, 'Play')
-        self.assertTrue(root[0].text.endswith('.mp3'))
+        # Listen for 0
+        self.assertEqual(root[0].tag, 'Gather')
 
+        # Play a message
+        self.assertEqual(root[0][1].tag, 'Play')
+        self.assertTrue(root[0][1].text.endswith('.mp3'))
 
     def test_menu_2(self):
         """ Test that pressing menu 2 calls random other caller """
