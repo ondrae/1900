@@ -84,5 +84,25 @@ def menu_press():
                 return str(resp)
 
 
+    # if digits == "3":
+        # The group party line
+        ## Can hold up to 40 people
+        #
+        # try:
+        #     import pdb; pdb.set_trace()
+        #     conference = client.conferences.list(friendly_name="partyline")
+        #     participants = conference.participants.list()
+        #     resp.say("Welcome to the party line.",voice="alice",language="en-GB")
+        #     num_participants = str(len(participants))
+        #     sentence = "There are " + num_participants + " talking on the party line."
+        #     resp.say(sentence, voice="alice", language="en-GB")
+        # except:
+        #     pass
+
+        # d = resp.dial()
+        # d.conference("partyline")
+        # return str(resp)
+
+
 if __name__ == "__main__":
     app.run(debug=True)
