@@ -16,13 +16,14 @@ client = TwilioRestClient(account_sid, auth_token)
 @app.route("/", methods=['GET'])
 def menu():
     """ Play a menu """
+    print "Playing main menu"
     resp = twilio.twiml.Response()
-    with resp.gather(numDigits=1, action="/menu_press", method="POST",finishOnKey="0") as gather:
+    with resp.gather(numDigits=1, action="/menu_press", method="POST") as gather:
         gather.say("Welcome to the party line.",voice="alice",language="en-GB")
         gather.say("Press 1 to hear a message",voice="alice",language="en-GB")
         gather.say("Press 2 to talk to someone",voice="alice",language="en-GB")
         gather.say("Press 3 to talk to everyone",voice="alice",language="en-GB")
-        gather.say("Press 0 anytime to come back to the menu",voice="alice",language="en-GB")
+        gather.say("Press any other key anytime to come back to the menu",voice="alice",language="en-GB")
  
     return str(resp)
 
@@ -34,16 +35,19 @@ def menu_press():
     resp = twilio.twiml.Response()
 
     if digits not in ["1","2","3"]:
-        resp.redirect("/")
+        resp.redirect("/", method="GET")
         return str(resp)
 
     if digits == "1":
         # Play a message
         # Press zed to return to the menu
-        with resp.gather(finishOnKey="0") as gather:
-            gather.say("Press 0 anytime to come back to the menu",voice="alice",language="en-GB")
+        print "1 pressed"
+
+        with resp.gather(numDigits=1, action="/menu_press", method="POST") as gather:
+            gather.say("Press any key anytime to come back to the menu",voice="alice",language="en-GB")
             gather.play("https://s3-us-west-1.amazonaws.com/after-the-tone/Memo.mp3")
-        resp.redirect("/")
+        resp.redirect("/", method="GET")
+        print str(resp)
         return str(resp)
 
     if digits == "2":
