@@ -1,6 +1,4 @@
 import os
-import random
-from datetime import date
 import twilio.twiml
 from twilio.rest import TwilioRestClient
 from flask import Flask, request
