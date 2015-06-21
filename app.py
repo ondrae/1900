@@ -19,7 +19,7 @@ client = TwilioRestClient(account_sid, auth_token)
 def menu():
     """ Play a menu """
     resp = twilio.twiml.Response()
-    with resp.gather(numDigits=1, action="/menu_press", method="POST") as gather:
+    with resp.gather(numDigits=1, action="/menu_press", method="POST",finishOnKey="0") as gather:
         gather.say("Welcome to the party line.",voice="alice",language="en-GB")
         gather.say("Press 1 to hear a message",voice="alice",language="en-GB")
         gather.say("Press 2 to talk to someone",voice="alice",language="en-GB")
@@ -35,7 +35,7 @@ def menu_press():
     digits = request.values.get('Digits', None)
     resp = twilio.twiml.Response()
 
-    if digits not in ["1","2","3","0"]:
+    if digits not in ["1","2","3"]:
         resp.redirect("/")
         return str(resp)
 
