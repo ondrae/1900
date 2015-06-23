@@ -12,10 +12,10 @@ class PartyLineTest(unittest.TestCase):
     def tearDown(self):
         pass
 
-    def test_party_line(self):
+    def test_incoming_call(self):
         """ Test that an incoming phone call works."""
         response = self.app.get('/')
-        
+
         self.assertEquals(response.status, "200 OK")
 
         # Parse the result into an ElementTree object
@@ -98,6 +98,27 @@ class PartyLineTest(unittest.TestCase):
         self.assertEqual(root[0].tag, 'Dial')
         self.assertEqual(root[0][0].tag, 'Conference')
         self.assertEqual(root[0][0].text,'partyline1')
+
+
+    def test_menu_3(self):
+        """ Test private party lines """
+        response = self.app.post("/menu_press", data={"Digits" : 3})
+
+        # Parse the result into an ElementTree object
+        root = ElementTree.fromstring(response.data)
+
+        self.assertEquals(response.status, "200 OK")
+
+        # Assert the root element is a Response tag
+        self.assertEquals(root.tag, 'Response',
+                "Did not find  tag as root element " \
+                "TwiML response.")
+
+        # Dial into a conference
+        self.assertEqual(root[0].tag, 'Say')
+        self.assertEqual(root[1].tag, 'Dial')
+        self.assertEqual(root[1][0].tag, 'Conference')
+        self.assertEqual(root[1][0].text,'grouppartyline')
 
 
 if __name__ == '__main__':
