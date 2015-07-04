@@ -48,6 +48,20 @@ def menu_press():
         return cry(resp)
 
 
+# Helper
+def makeconference(resp, friendly_name):
+    d = resp.dial()
+    kwargs = {
+        "waitUrl" : "https://s3-us-west-1.amazonaws.com/after-the-tone/holdmusicprivatepartyline.mp3",
+        "waitMethod" : "GET"
+    }
+    if friendly_name == "grouppartyline":
+        kwargs["waitUrl"] = "https://s3-us-west-1.amazonaws.com/after-the-tone/holdmusicgrouppartyline.mp3"
+    d.conference(friendly_name, **kwargs)
+    return str(resp)
+
+
+# Menu options
 def privatepartyline(resp):
     # Connect two people in a private partyline
     # Get list of current partylines
@@ -60,28 +74,22 @@ def privatepartyline(resp):
     # If there arent any, make a new one
     if not partylines:
         print "Making new partyline"
-        new_partyline = "partyline1"
-        d = resp.dial()
-        d.conference(new_partyline)
-        return str(resp)
+        friendly_name = "partyline1"
+        return makeconference(resp, friendly_name)
 
     # Look in newest partyline for someone waiting
     else:
         newest_partyline = partylines.pop()
-        newest_partyline_name = newest_partyline.friendly_name
-        conference = client.conferences.list(friendly_name=newest_partyline_name)
+        friendly_name = newest_partyline.friendly_name
+        conference = client.conferences.list(friendly_name=friendly_name)
         participants = conference[0].participants.list()
         if len(participants) == 1:
-            d = resp.dial()
-            d.conference(newest_partyline_name)
-            return str(resp)
+            return makeconference(resp, friendly_name)
 
         # If they are all paired up, make a new room
         else:
-            new_partyline_name = "partyline" + str(len(partylines) + 1)
-            d = resp.dial()
-            d.conference(new_partyline_name)
-            return str(resp)
+            friendly_name = "partyline" + str(len(partylines) + 1)
+            return makeconference(resp, friendly_name)
 
 
 def grouppartyline(resp):
@@ -94,9 +102,7 @@ def grouppartyline(resp):
         num_participants = str(len(participants))
         sentence = "There are " + num_participants + " talking on the party line."
         resp.say(sentence, voice="alice", language="en-GB")
-    d = resp.dial()
-    d.conference("grouppartyline")
-    return str(resp)
+    return makeconference(resp, friendly_name)
 
 
 def cry(resp):
