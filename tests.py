@@ -29,26 +29,14 @@ class PartyLineTest(unittest.TestCase):
         # Menu is listening
         self.assertEqual(root[0].tag, 'Gather')
 
-        # Menu has five options
-        self.assertEquals(len(root[0].findall('Say')), 5,
-                "Did not find five menu options, instead found: %i " %
-                len(root.findall('Say')))
+        # Menu mp3
+        self.assertEqual(root[0][0].tag, 'Play')
+        self.assertTrue(root[0][0].text.endswith('.mp3'))
 
 
     def test_bad_menu_press(self):
         """ Test that non menu choices start the menu over """
-        response = self.app.post("/menu_press", data={"Digits" : 4})
-
-        self.assertEquals(response.status, "200 OK")
-
-        # Parse the result into an ElementTree object
-        root = ElementTree.fromstring(response.data)
-
-        # Assert that we are about to redirect
-        self.assertTrue(root[0].tag,"Redirect")
-        self.assertTrue(root[0].text,"/")
-
-        response = self.app.post("/menu_press", data={"Digits" : 4637829423048})
+        response = self.app.post("/menu_press", data={"Digits" : 9})
 
         self.assertEquals(response.status, "200 OK")
 
@@ -60,9 +48,9 @@ class PartyLineTest(unittest.TestCase):
         self.assertTrue(root[0].text,"/")
 
 
-    def test_menu_1(self):
-        """ Test that pressing menu 1 plays an mp3"""
-        response = self.app.post("/menu_press", data={"Digits" : 1})
+    def test_cry(self):
+        """ Test crying mp3"""
+        response = self.app.post("/menu_press", data={"Digits" : 3})
 
         # Parse the result into an ElementTree object
         root = ElementTree.fromstring(response.data)
@@ -76,13 +64,13 @@ class PartyLineTest(unittest.TestCase):
         self.assertEqual(root[0].tag, 'Gather')
 
         # Play a message
-        self.assertEqual(root[0][1].tag, 'Play')
-        self.assertTrue(root[0][1].text.endswith('.mp3'))
+        self.assertEqual(root[0][0].tag, 'Play')
+        self.assertTrue(root[0][0].text.endswith('.mp3'))
 
 
-    def test_menu_2(self):
+    def test_privatepartyline(self):
         """ Test private party lines """
-        response = self.app.post("/menu_press", data={"Digits" : 2})
+        response = self.app.post("/menu_press", data={"Digits" : 1})
 
         # Parse the result into an ElementTree object
         root = ElementTree.fromstring(response.data)
@@ -100,9 +88,9 @@ class PartyLineTest(unittest.TestCase):
         self.assertEqual(root[0][0].text,'partyline1')
 
 
-    def test_menu_3(self):
-        """ Test private party lines """
-        response = self.app.post("/menu_press", data={"Digits" : 3})
+    def test_grouppartline(self):
+        """ Test group party lines """
+        response = self.app.post("/menu_press", data={"Digits" : 2})
 
         # Parse the result into an ElementTree object
         root = ElementTree.fromstring(response.data)
@@ -116,9 +104,10 @@ class PartyLineTest(unittest.TestCase):
 
         # Dial into a conference
         self.assertEqual(root[0].tag, 'Say')
-        self.assertEqual(root[1].tag, 'Dial')
-        self.assertEqual(root[1][0].tag, 'Conference')
-        self.assertEqual(root[1][0].text,'grouppartyline')
+        self.assertEqual(root[1].tag, 'Say')
+        self.assertEqual(root[2].tag, 'Dial')
+        self.assertEqual(root[2][0].tag, 'Conference')
+        self.assertEqual(root[2][0].text,'grouppartyline')
 
 
 if __name__ == '__main__':
