@@ -88,7 +88,7 @@ class PartyLineTest(unittest.TestCase):
         self.assertEqual(root[0][0].text,'partyline1')
 
 
-    def test_grouppartline(self):
+    def test_grouppartyline(self):
         """ Test group party lines """
         response = self.app.post("/menu_press", data={"Digits" : 2})
 

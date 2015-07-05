@@ -96,7 +96,8 @@ def grouppartyline(resp):
     # The group party line
     # Can hold up to 40 people
     resp.say("Welcome to the party line.",voice="alice",language="en-GB")
-    conference = client.conferences.list(friendly_name="grouppartyline")
+    friendly_name = "grouppartyline"
+    conference = client.conferences.list(friendly_name=friendly_name)
     if conference:
         participants = conference[0].participants.list()
         num_participants = str(len(participants))
