@@ -104,10 +104,9 @@ class PartyLineTest(unittest.TestCase):
 
         # Dial into a conference
         self.assertEqual(root[0].tag, 'Say')
-        self.assertEqual(root[1].tag, 'Say')
-        self.assertEqual(root[2].tag, 'Dial')
-        self.assertEqual(root[2][0].tag, 'Conference')
-        self.assertEqual(root[2][0].text,'grouppartyline')
+        self.assertEqual(root[1].tag, 'Dial')
+        self.assertEqual(root[1][0].tag, 'Conference')
+        self.assertEqual(root[1][0].text,'grouppartyline')
 
 
 if __name__ == '__main__':

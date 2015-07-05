@@ -95,13 +95,12 @@ def privatepartyline(resp):
 def grouppartyline(resp):
     # The group party line
     # Can hold up to 40 people
-    resp.say("Welcome to the party line.",voice="alice",language="en-GB")
     friendly_name = "grouppartyline"
     conference = client.conferences.list(friendly_name=friendly_name)
     if conference:
         participants = conference[0].participants.list()
         num_participants = str(len(participants))
-        sentence = "There are " + num_participants + " talking on the party line."
+        sentence = "There are " + num_participants + " others talking on the party line."
         resp.say(sentence, voice="alice", language="en-GB")
     return makeconference(resp, friendly_name)
 
