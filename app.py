@@ -1,7 +1,10 @@
 import os
 import twilio.twiml
 from twilio.rest import TwilioRestClient
-from flask import Flask, request
+from parse_rest.connection import register
+from parse_rest.datatypes import Object
+
+from flask import Flask, request, render_template
 
 # Flask config
 SECRET_KEY = "a secret key"
@@ -12,6 +15,15 @@ app.secret_key = SECRET_KEY
 account_sid = os.environ["ACCOUNT_SID"]
 auth_token = os.environ["AUTH_TOKEN"]
 client = TwilioRestClient(account_sid, auth_token)
+
+# Parse config
+parse_app_id = os.environ["PARSE_APP_ID"]
+parse_api_key = os.environ["PARSE_API_KEY"]
+parse_master_key = os.environ["PARSE_MASTER_KEY"]
+register(parse_app_id, parse_api_key, master_key=parse_master_key)
+
+class Recording(Object):
+    pass
 
 
 # ROUTES
@@ -46,6 +58,44 @@ def menu_press():
     if digits == "3":
         print "3 pressed"
         return cry(resp)
+
+    if digits == "4":
+        print "4 pressed"
+        return leaveamessage(resp)
+
+
+@app.route("/recordings")
+def recordings():
+    recordings = client.recordings.list()
+    return render_template("recordings.html", recordings=recordings)
+
+
+@app.route("/receivemessage", methods=['POST'])
+def receivemessage():
+    recording_url = request.values.get("RecordingUrl", None)
+    print recording_url
+    recording = Recording(type="message",url=recording_url)
+    recording.save()
+    resp = twiml.Response()
+    resp.say("That was beautiful.", voice="woman")
+    resp.redirect("/")
+    return str(resp)
+
+
+@app.route("/tagprivatepartyline", methods=['POST'])
+def tagprivatepartyline():
+    recording_url = request.values.get("RecordingUrl", None)
+    print recording_url
+    recording = Recording(type="privatepartyline",url=recording_url)
+    recording.save()
+
+
+@app.route("/taggrouppartyline", methods=['POST'])
+def taggrouppartyline():
+    recording_url = request.values.get("RecordingUrl", None)
+    print recording_url
+    recording = Recording(type="grouppartyline",url=recording_url)
+    recording.save()
 
 
 # Helper
@@ -110,6 +160,14 @@ def cry(resp):
     # Any key will return to menu
     with resp.gather(numDigits=1, action="/", method="GET") as gather:
         gather.play("https://s3-us-west-1.amazonaws.com/after-the-tone/crying.mp3")
+    resp.redirect("/", method="GET")
+    return str(resp)
+
+
+def leaveamessage(resp):
+    # Leave a message
+    resp.say("Press any key when done.", voice="alice", language="en-GB")
+    resp.record(action="/receivemessage")
     resp.redirect("/", method="GET")
     return str(resp)
 

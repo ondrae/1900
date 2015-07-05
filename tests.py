@@ -48,26 +48,6 @@ class PartyLineTest(unittest.TestCase):
         self.assertTrue(root[0].text,"/")
 
 
-    def test_cry(self):
-        """ Test crying mp3"""
-        response = self.app.post("/menu_press", data={"Digits" : 3})
-
-        # Parse the result into an ElementTree object
-        root = ElementTree.fromstring(response.data)
-
-        # Assert the root element is a Response tag
-        self.assertEquals(root.tag, 'Response',
-                "Did not find  tag as root element " \
-                "TwiML response.")
-
-        # Listen for 0
-        self.assertEqual(root[0].tag, 'Gather')
-
-        # Play a message
-        self.assertEqual(root[0][0].tag, 'Play')
-        self.assertTrue(root[0][0].text.endswith('.mp3'))
-
-
     def test_privatepartyline(self):
         """ Test private party lines """
         response = self.app.post("/menu_press", data={"Digits" : 1})
@@ -107,6 +87,46 @@ class PartyLineTest(unittest.TestCase):
         self.assertEqual(root[1].tag, 'Dial')
         self.assertEqual(root[1][0].tag, 'Conference')
         self.assertEqual(root[1][0].text,'grouppartyline')
+
+
+    def test_cry(self):
+        """ Test crying mp3"""
+        response = self.app.post("/menu_press", data={"Digits" : 3})
+
+        # Parse the result into an ElementTree object
+        root = ElementTree.fromstring(response.data)
+
+        # Assert the root element is a Response tag
+        self.assertEquals(root.tag, 'Response',
+                "Did not find  tag as root element " \
+                "TwiML response.")
+
+        # Listen for 0
+        self.assertEqual(root[0].tag, 'Gather')
+
+        # Play a message
+        self.assertEqual(root[0][0].tag, 'Play')
+        self.assertTrue(root[0][0].text.endswith('.mp3'))
+
+
+    def test_leaveamessage(self):
+        """ Test out recording a message """
+        response = self.app.post("/menu_press", data={"Digits" : 4})
+
+        # Parse the result into an ElementTree object
+        root = ElementTree.fromstring(response.data)
+
+        self.assertEquals(response.status, "200 OK")
+
+        # Assert the root element is a Response tag
+        self.assertEquals(root.tag, 'Response',
+                "Did not find  tag as root element " \
+                "TwiML response.")
+
+        # Assert that you can leave a message
+        self.assertEqual(root[0].tag, 'Say')
+        self.assertEqual(root[1].tag, 'Record')
+        self.assertEqual(root[2].tag, 'Redirect')
 
 
 if __name__ == '__main__':
