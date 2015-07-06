@@ -72,8 +72,8 @@ def recordings():
     return render_template("recordings.html", recordings=recordings)
 
 
-@app.route("/receivemessage", methods=['POST'])
-def receivemessage():
+@app.route("/tagmessage", methods=['POST'])
+def tagmessage():
     recording_url = request.values.get("RecordingUrl", None)
     recording = Recording(type="message",url=recording_url+".mp3")
     recording.save()
@@ -97,66 +97,66 @@ def taggrouppartyline():
     recording.save()
 
 
-# Helper
-def makeconference(resp, friendly_name):
-    # Make a new conference
+# Menu options
+def privatepartyline(resp):
+    # Connect two people in a private partyline
+    # Prep response
     d = resp.dial()
     kwargs = {
         "waitUrl" : "https://s3-us-west-1.amazonaws.com/after-the-tone/holdmusicprivatepartyline.mp3",
         "waitMethod" : "GET",
         "record" : "record-from-start",
-        "eventCallbackUrl" : "/tagprivatepartyline"
+        "eventCallbackUrl" : "/tagprivatepartyline",
+        "maxParticipants" : 2
     }
-    # A few edits if its the grouppartyline
-    if friendly_name == "grouppartyline":
-        kwargs["waitUrl"] = "https://s3-us-west-1.amazonaws.com/after-the-tone/holdmusicgrouppartyline.mp3"
-        kwargs["eventCallbackUrl"] = "/taggrouppartyline"
-    d.conference(friendly_name, **kwargs)
-    return str(resp)
 
-
-# Menu options
-def privatepartyline(resp):
-    # Connect two people in a private partyline
-    # Get list of current partylines
+    # Find which partyline to add caller to
     partylines = client.conferences.list(status="in-progress")
 
-    # grouppartyline is the bigun
-    if "grouppartyline" in partylines:
-        partylines.remove("grouppartyline")
-
-    # If there arent any, make a new one
+    # If nothing active, start a new line
     if not partylines:
-        print "Making new partyline"
-        friendly_name = "partyline1"
-        return makeconference(resp, friendly_name)
+        d.conference("privatepartyline", **kwargs)
+        print "privatepartyline"
+        return str(resp)
 
-    # Look in newest partyline for someone waiting
-    else:
-        newest_partyline = partylines.pop()
-        friendly_name = newest_partyline.friendly_name
-        conference = client.conferences.list(friendly_name=friendly_name)
-        participants = conference[0].participants.list()
-        if len(participants) == 1:
-            return makeconference(resp, friendly_name)
+    # else find a privatepartyline with one person waiting
+    for partyline in partylines:
+        if "privatepartyline" in partyline.friendly_name:
+            conference = client.conferences.get(sid=partyline.sid)
+            participants = conference.participants.list()
+            if len(participants) == 1:
+                d.conference(conference.friendly_name, **kwargs)
+                print conference.friendly_name
+                return str(resp)
 
-        # If they are all paired up, make a new room
-        else:
-            friendly_name = "partyline" + str(len(partylines) + 1)
-            return makeconference(resp, friendly_name)
+    # If still no friendly_name, start a new one
+    friendly_name = "privatepartyline" + str(len(partylines))
+    d.conference(friendly_name, **kwargs)
+    print friendly_name
+    return str(resp)
 
 
 def grouppartyline(resp):
     # The group party line
-    # Can hold up to 40 people
+    # get number of other people
     friendly_name = "grouppartyline"
-    conference = client.conferences.list(friendly_name=friendly_name)
+    conference = client.conferences.list(friendly_name=friendly_name, status="in-progress")
     if conference:
         participants = conference[0].participants.list()
-        num_participants = str(len(participants))
-        sentence = "There are " + num_participants + " others talking on the party line."
-        resp.say(sentence, voice="alice", language="en-GB")
-    return makeconference(resp, friendly_name)
+        if participants:
+            sentence = "There are " + str(len(participants)) + " others talking on the party line."
+            resp.say(sentence, voice="alice", language="en-GB")
+
+    d = resp.dial()
+    kwargs = {
+        "waitUrl" : "https://s3-us-west-1.amazonaws.com/after-the-tone/holdmusicgrouppartyline.mp3",
+        "waitMethod" : "GET",
+        "record" : "record-from-start",
+        "eventCallbackUrl" : "/taggrouppartyline",
+        "maxParticipants" : 40
+    }
+    d.conference(friendly_name, **kwargs)
+    return str(resp)
 
 
 def cry(resp):
@@ -171,7 +171,7 @@ def cry(resp):
 def leaveamessage(resp):
     # Leave a message
     resp.say("Press any key when done.", voice="alice", language="en-GB")
-    resp.record(action="/receivemessage")
+    resp.record(action="/tagmessage")
     resp.redirect("/", method="GET")
     return str(resp)
 

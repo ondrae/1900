@@ -66,7 +66,7 @@ class PartyLineTest(unittest.TestCase):
         # Dial into a conference
         self.assertEqual(root[0].tag, 'Dial')
         self.assertEqual(root[0][0].tag, 'Conference')
-        self.assertEqual(root[0][0].text,'partyline1')
+        self.assertEqual(root[0][0].text,'privatepartyline')
 
 
     def test_grouppartyline(self):
@@ -84,10 +84,9 @@ class PartyLineTest(unittest.TestCase):
                 "TwiML response.")
 
         # Dial into a conference
-        self.assertEqual(root[0].tag, 'Say')
-        self.assertEqual(root[1].tag, 'Dial')
-        self.assertEqual(root[1][0].tag, 'Conference')
-        self.assertEqual(root[1][0].text,'grouppartyline')
+        self.assertEqual(root[0].tag, 'Dial')
+        self.assertEqual(root[0][0].tag, 'Conference')
+        self.assertEqual(root[0][0].text,'grouppartyline')
 
 
     def test_cry(self):
