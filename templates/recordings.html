@@ -1,0 +1,17 @@
+<html>
+<head>
+ <link rel="stylesheet" href="http://interactive.fusion.net/real-future-show/app.b7d933d8.css" />
+</head>
+<body>
+    <h2>Real Future: Romance</h2>
+    <h3>Recordings</h3>
+    <ul style="list-style-type:none; text-align:center; padding-left: 0px;">
+        {% for recording in recordings %}
+        <li style="padding-top: 15px;">
+            <p>{{recording.type}} :: {{recording.createdAt | timesince}}</p>
+            <audio src="{{recording.url}}" controls />
+        </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
