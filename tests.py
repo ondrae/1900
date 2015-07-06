@@ -1,7 +1,8 @@
 import unittest
+from xml.etree import ElementTree
+
 from app import app
 
-from xml.etree import ElementTree
 
 class PartyLineTest(unittest.TestCase):
 

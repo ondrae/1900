@@ -5,11 +5,13 @@ from parse_rest.connection import register
 from parse_rest.datatypes import Object
 
 from flask import Flask, request, render_template
+import filters
 
 # Flask config
 SECRET_KEY = "a secret key"
 app = Flask(__name__)
 app.secret_key = SECRET_KEY
+app.register_blueprint(filters.blueprint)
 
 # Twilio config
 account_sid = os.environ["ACCOUNT_SID"]
@@ -66,47 +68,49 @@ def menu_press():
 
 @app.route("/recordings")
 def recordings():
-    recordings = client.recordings.list()
+    recordings = Recording.Query.all().order_by('-createdAt')
     return render_template("recordings.html", recordings=recordings)
 
 
 @app.route("/receivemessage", methods=['POST'])
 def receivemessage():
     recording_url = request.values.get("RecordingUrl", None)
-    print recording_url
-    recording = Recording(type="message",url=recording_url)
+    recording = Recording(type="message",url=recording_url+".mp3")
     recording.save()
-    resp = twiml.Response()
+    resp = twilio.twiml.Response()
     resp.say("That was beautiful.", voice="woman")
-    resp.redirect("/")
+    resp.redirect("/", method="GET")
     return str(resp)
 
 
 @app.route("/tagprivatepartyline", methods=['POST'])
 def tagprivatepartyline():
     recording_url = request.values.get("RecordingUrl", None)
-    print recording_url
-    recording = Recording(type="privatepartyline",url=recording_url)
+    recording = Recording(type="privatepartyline",url=recording_url+".mp3")
     recording.save()
 
 
 @app.route("/taggrouppartyline", methods=['POST'])
 def taggrouppartyline():
     recording_url = request.values.get("RecordingUrl", None)
-    print recording_url
-    recording = Recording(type="grouppartyline",url=recording_url)
+    recording = Recording(type="grouppartyline",url=recording_url+".mp3")
     recording.save()
 
 
 # Helper
 def makeconference(resp, friendly_name):
+    # Make a new conference
     d = resp.dial()
     kwargs = {
         "waitUrl" : "https://s3-us-west-1.amazonaws.com/after-the-tone/holdmusicprivatepartyline.mp3",
-        "waitMethod" : "GET"
+        "waitMethod" : "GET",
+        "record" : "record-from-start",
+        "eventCallbackUrl" : "/tagprivatepartyline"
     }
+    # A few edits if its the grouppartyline
     if friendly_name == "grouppartyline":
         kwargs["waitUrl"] = "https://s3-us-west-1.amazonaws.com/after-the-tone/holdmusicgrouppartyline.mp3"
+        kwargs["eventCallbackUrl"] = "/taggrouppartyline"
     d.conference(friendly_name, **kwargs)
     return str(resp)
 
