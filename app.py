@@ -105,8 +105,6 @@ def privatepartyline(resp):
     kwargs = {
         "waitUrl" : "https://s3-us-west-1.amazonaws.com/after-the-tone/holdmusicprivatepartyline.mp3",
         "waitMethod" : "GET",
-        "record" : "record-from-start",
-        "eventCallbackUrl" : "/tagprivatepartyline",
         "maxParticipants" : 2
     }
 
@@ -151,8 +149,6 @@ def grouppartyline(resp):
     kwargs = {
         "waitUrl" : "https://s3-us-west-1.amazonaws.com/after-the-tone/holdmusicgrouppartyline.mp3",
         "waitMethod" : "GET",
-        "record" : "record-from-start",
-        "eventCallbackUrl" : "/taggrouppartyline",
         "maxParticipants" : 40
     }
     d.conference(friendly_name, **kwargs)
