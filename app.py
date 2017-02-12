@@ -1,11 +1,7 @@
 import os
 import twilio.twiml
 from twilio.rest import TwilioRestClient
-
 from flask import Flask, request, render_template
-from flask.ext.sqlalchemy import SQLAlchemy
-from sqlalchemy import desc
-
 import filters
 
 # Flask config
@@ -13,24 +9,11 @@ SECRET_KEY = "a secret key"
 app = Flask(__name__)
 app.secret_key = SECRET_KEY
 app.register_blueprint(filters.blueprint)
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
-db = SQLAlchemy(app)
 
 # Twilio config
 account_sid = os.environ["ACCOUNT_SID"]
 auth_token = os.environ["AUTH_TOKEN"]
 client = TwilioRestClient(account_sid, auth_token)
-
-# CLASS
-class Recording(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    url = db.Column(db.Unicode)
-
-    def __init__(self, url):
-        self.url = url
-
-    def __repr__(self):
-        return url
 
 
 # ROUTES
@@ -73,20 +56,8 @@ def menu_press():
 
 @app.route("/recordings")
 def recordings():
-    recordings = Recording.query.all().order_by(desc('createdAt'))
+    recordings = client.recordings.list()
     return render_template("recordings.html", recordings=recordings)
-
-
-@app.route("/tagmessage", methods=['POST'])
-def tagmessage():
-    recording_url = request.values.get("RecordingUrl", None)
-    recording = Recording(url=recording_url+".mp3")
-    recording.save()
-    resp = twilio.twiml.Response()
-    resp.say("That was beautiful.", voice="woman")
-    resp.redirect("/", method="GET")
-    return str(resp)
-
 
 
 # Menu options
@@ -159,7 +130,6 @@ def cry(resp):
 def leaveamessage(resp):
     # Leave a message
     resp.say("Press any key when done.", voice="alice", language="en-GB")
-    # resp.record(action="/tagmessage")
     resp.redirect("/", method="GET")
     return str(resp)
 

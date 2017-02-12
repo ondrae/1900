@@ -8,8 +8,8 @@
     <ul style="list-style-type:none; text-align:center; padding-left: 0px;">
         {% for recording in recordings %}
         <li style="padding-top: 15px;">
-            <p>{{recording.type}} :: {{recording.createdAt | timesince}}</p>
-            <audio src="{{recording.url}}" controls />
+            <p>{{recording.date_created | timesince}}</p>
+            <audio src="{{recording.uri}}" controls />
         </li>
         {% endfor %}
     </ul>
