@@ -143,7 +143,8 @@ def cry(resp):
 def leaveamessage(resp):
     # Leave a message
     resp.say("Press any key when done.", voice="alice", language="en-GB")
-    resp.redirect("/", method="GET")
+    resp.record()
+    resp.redirect("/", method="POST")
     return str(resp)
 
 
