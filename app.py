@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import os
 import twilio.twiml
 from twilio.rest import TwilioRestClient
@@ -24,6 +27,15 @@ def menu():
     resp = twilio.twiml.Response()
     with resp.gather(numDigits=1, action="/menu_press", method="POST") as gather:
         gather.play("https://s3-us-west-1.amazonaws.com/after-the-tone/900menu.mp3")
+    return str(resp)
+
+
+@app.route("/sms", methods=['GET'])
+def sms():
+    """ Answer text messages  """
+    print "Answering a text message"
+    resp = twilio.twiml.Response()
+    resp.message("i want to hear the sound of your voice. call me. 💋")
     return str(resp)
 
 
