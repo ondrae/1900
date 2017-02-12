@@ -21,6 +21,13 @@ client = TwilioRestClient(account_sid, auth_token)
 
 # ROUTES
 @app.route("/", methods=['GET'])
+def index():
+    recordings = client.recordings.list()
+    messages = client.messages.list()
+    return render_template("index.html", recordings=recordings, messages=messages)
+
+
+@app.route("/", methods=['POST'])
 def menu():
     """ Play a menu """
     print "Playing main menu"
@@ -30,7 +37,7 @@ def menu():
     return str(resp)
 
 
-@app.route("/sms", methods=['GET'])
+@app.route("/sms", methods=['POST'])
 def sms():
     """ Answer text messages  """
     print "Answering a text message"
@@ -64,12 +71,6 @@ def menu_press():
     if digits == "4":
         print "4 pressed"
         return leaveamessage(resp)
-
-
-@app.route("/recordings")
-def recordings():
-    recordings = client.recordings.list()
-    return render_template("recordings.html", recordings=recordings)
 
 
 # Menu options
